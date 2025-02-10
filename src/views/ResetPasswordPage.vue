@@ -174,12 +174,27 @@ function validateEmail(email) {
 }
 
 function verifyPasswordInputs() {
-  passwordError.value = !newPassword.value || newPassword.value.length < 8;
-  passwordErrorMessage.value = passwordError.value && newPassword.value.length < 8 
-    ? '密码长度必须大于8位' 
-    : '密码不能为空';
-  confirmPasswordError.value = newPassword.value !== confirmPassword.value;
-  return !passwordError.value && !confirmPasswordError.value;
+  // 密码格式校验正则
+  const passwordRegex = /^(?=.*[0-9])(?=.*[a-zA-Z])[0-9a-zA-Z]{6,}$/;
+  
+  if (!newPassword.value) {
+    passwordError.value = true;
+    passwordErrorMessage.value = '密码不能为空';
+    return false;
+  }
+  
+  if (!passwordRegex.test(newPassword.value)) {
+    passwordError.value = true;
+    passwordErrorMessage.value = '密码必须包含数字和字母，且长度不少于6位';
+    return false;
+  }
+
+  if (newPassword.value !== confirmPassword.value) {
+    confirmPasswordError.value = true;
+    return false;
+  }
+
+  return true;
 }
 
 async function sendEmailCode() {
@@ -240,7 +255,7 @@ async function verifyEmail() {
     if (error.response && error.response.data) {
       showTag('error', '验证失败', error.response.data.msg);
     } else {
-      showTag('error', '验证失败', '验证码错误，请重试');
+      showTag('error', '验证失败', '验证失败，请重试');
     }
   } finally {
     verifyLoading.value = false;
@@ -259,7 +274,12 @@ async function handleResetPassword() {
     }, 1500);
   } catch (error) {
     if (error.response && error.response.data) {
-      showTag('error', '重置失败', error.response.data.msg);
+      // 处理链接超时的情况
+      if (error.response.data.msg.includes('超时')) {
+        showTag('error', '重置失败', '链接已超时，请重新获取验证码');
+      } else {
+        showTag('error', '重置失败', error.response.data.msg);
+      }
     } else {
       showTag('error', '重置失败', '密码重置失败，请重试');
     }
