@@ -7,7 +7,7 @@
             :width="!chatStore.xs ? '65%' : '100%'">
             <h2 class="text-center" style="margin-bottom:20px">登&nbsp&nbsp录</h2>
             <v-text-field class="my-2" label="邮箱" color="#2F94F1" density="compact" variant="outlined" v-model="email"
-              :error="emailError" @click="emailError = false" :error-messages="emailError ? ['请输入有效的邮箱地址'] : []"
+              :error="emailError" @click="emailError = false" :error-messages="emailError ? [emailErrorMessage] : []"
               @keyup.enter="handleLogin">
             </v-text-field>
 
@@ -35,7 +35,7 @@
             <h2 class="text-center">注&nbsp&nbsp册</h2>
             <v-text-field class="my-2" label="邮箱" color="#2F94F1" density="compact" placeholder="邮箱" variant="outlined"
               v-model="email" :error="emailError" @click="emailError = false"
-              :error-messages="emailError ? ['请输入有效的邮箱地址'] : []">
+              :error-messages="emailError ? [emailErrorMessage] : []">
             </v-text-field>
             <v-text-field class="my-2" label="密码" color="#2F94F1" density="compact" placeholder="密码" type="password"
               variant="outlined" v-model="password" @click="passwordError = false" :error="passwordError"
@@ -50,8 +50,10 @@
 
             <div style="display: flex;align-items: center;justify-content: flex-end">
               <v-text-field class="my-2" density="compact" placeholder="验证码" color="#2F94F1" variant="outlined"
-                hide-details="true" v-model="emailCode" label="验证码">
-
+                hide-details="true" v-model="emailCode" label="验证码"
+                :error="emailCodeError"
+                :error-messages="emailCodeError ? [emailCodeErrorMessage] : []"
+                @click="emailCodeError = false">
               </v-text-field>
 
 
@@ -116,11 +118,14 @@ const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 const emailError = ref(false);
+const emailErrorMessage = ref('');
 const passwordError = ref(false);
 const passwordErrorMessage = ref('');
 const confirmPasswordError = ref(false);
 const inviteCode = ref(null);  // 添加邀请码的状态
 const emailCode = ref('');
+const emailCodeError = ref(false);
+const emailCodeErrorMessage = ref('');
 
 
 const loginLoading = ref(false);
@@ -142,21 +147,69 @@ watch(route, () => {
 }, { immediate: true });
 
 function validateEmail(email) {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const re = /^[a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
   return re.test(email);
+}
+
+function validatePassword(pwd) {
+  const re = /^(?=.*[0-9])(?=.*[a-zA-Z])[0-9a-zA-Z]{6,}$/;
+  return re.test(pwd);
 }
 
 function verifyLoginInput() {
   emailError.value = !validateEmail(email.value);
-  passwordError.value = !password.value || password.value.length < 8;
-  passwordErrorMessage.value = passwordError.value && password.value.length < 8 ? '密码长度必须大于8位' : '密码不能为空';
+  if (!email.value) {
+    emailError.value = true;
+    emailErrorMessage.value = '邮箱不能为空';
+  } else if (!validateEmail(email.value)) {
+    emailError.value = true;
+    emailErrorMessage.value = '请输入有效的邮箱地址';
+  }
+
+  passwordError.value = !validatePassword(password.value);
+  if (!password.value) {
+    passwordError.value = true;
+    passwordErrorMessage.value = '密码不能为空';
+  } else if (password.value.length < 6) {
+    passwordError.value = true;
+    passwordErrorMessage.value = '密码长度必须至少6位';
+  } else if (!validatePassword(password.value)) {
+    passwordError.value = true;
+    passwordErrorMessage.value = '密码必须包含数字和字母';
+  }
 }
 
 function verifyRegisterInput() {
   emailError.value = !validateEmail(email.value);
-  passwordError.value = !password.value || password.value.length < 8;
-  passwordErrorMessage.value = passwordError.value && password.value.length < 8 ? '密码长度必须大于8位' : '密码不能为空';
+  if (!email.value) {
+    emailError.value = true;
+    emailErrorMessage.value = '邮箱不能为空';
+  } else if (!validateEmail(email.value)) {
+    emailError.value = true;
+    emailErrorMessage.value = '请输入有效的邮箱地址';
+  }
+
+  passwordError.value = !validatePassword(password.value);
+  if (!password.value) {
+    passwordError.value = true;
+    passwordErrorMessage.value = '密码不能为空';
+  } else if (password.value.length < 6) {
+    passwordError.value = true;
+    passwordErrorMessage.value = '密码长度必须至少6位';
+  } else if (!validatePassword(password.value)) {
+    passwordError.value = true;
+    passwordErrorMessage.value = '密码必须包含数字和字母';
+  }
+
   confirmPasswordError.value = password.value !== confirmPassword.value;
+
+  emailCodeError.value = !emailCode.value;
+  if (!emailCode.value) {
+    emailCodeError.value = true;
+    emailCodeErrorMessage.value = '请输入验证码';
+  }
+
+  return !emailError.value && !passwordError.value && !confirmPasswordError.value && !emailCodeError.value;
 }
 
 function verifyInputBeforeSendEmail() {
@@ -196,26 +249,28 @@ async function handleLogin() {
 }
 
 async function handleRegister() {
-  verifyRegisterInput()
-  if (!emailError.value && !passwordError.value && !confirmPasswordError.value) {
-    const loading = ElLoading.service({
-      lock: true,
-      text: '注册中...',
-      background: 'rgba(255, 255, 255, 0.7)',
-    })
-    try {
-      const data = await register(email.value, password.value, emailCode.value, inviteCode.value);
-      notification.success('注册成功!', "注册成功！快去登录吧！", 3000, 'top-left');
-      resetForm();
-    } catch (error) {
-      if (error.code === 500) {
-        notification.error('注册失败!', error.msg, 3000, 'top-left');
-      } else if (error.code === 501) {
-        notification.networkError();
-      }
-    } finally {
-      loading.close()
+  if (!verifyRegisterInput()) {
+    return;
+  }
+
+  const loading = ElLoading.service({
+    lock: true,
+    text: '注册中...',
+    background: 'rgba(255, 255, 255, 0.7)',
+  })
+  try {
+    const data = await register(email.value, password.value, emailCode.value, inviteCode.value);
+    notification.success('注册成功!', "注册成功！快去登录吧！", 3000, 'top-left');
+    router.push('/login');
+    resetForm();
+  } catch (error) {
+    if (error.code === 500) {
+      notification.error('注册失败!', error.msg, 3000, 'top-left');
+    } else if (error.code === 501) {
+      notification.networkError();
     }
+  } finally {
+    loading.close()
   }
 }
 
@@ -281,11 +336,12 @@ function resetForm() {
   confirmPassword.value = '';
   emailCode.value = '';
   emailError.value = false;
+  emailErrorMessage.value = '';
   passwordError.value = false;
   confirmPasswordError.value = false;
   passwordErrorMessage.value = '';
-
-
+  emailCodeError.value = false;
+  emailCodeErrorMessage.value = '';
 }
 
 function showForgotPassword() {

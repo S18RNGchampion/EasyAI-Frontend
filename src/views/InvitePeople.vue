@@ -57,7 +57,7 @@
           <div v-else class="empty-state">
             <el-empty description="暂无邀请记录" />
           </div>
-        </div> 
+        </div>
       </div>
     </div>
   </el-dialog>
@@ -74,7 +74,7 @@ import notification from '@/utils/notification'
 const chatStore = useChatStore()
 
 // 邀请链接
-const inviteLink = ref(`localhost:3300?invite=${chatStore.userInfo.id}`)
+const inviteLink = ref(`https://easyai.host?invite=${chatStore.userInfo.id}`)
 
 // 分页相关
 const currentPage = ref(1)
@@ -96,7 +96,7 @@ const copyLink = async () => {
 
 // 获取邀请列表数据
 const fetchInviteList = async () => {
-  try {  
+  try {
     inviteList.value = await getInviteUserList();
   } catch (error) {
     if (error.code === 500) {

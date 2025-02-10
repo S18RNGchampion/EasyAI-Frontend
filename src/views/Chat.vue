@@ -54,13 +54,17 @@
                 <v-icon icon="mdi-account" color="white"></v-icon>
               </v-avatar>
               <div class="user-info">
-                <div class="user-name">{{ chatStore.userInfo?.nickname || '未登录' }}</div>
+                <div class="user-name" style="height: 16px;">个人信息</div>
               </div>
             </div>
 
             <template #dropdown>
               <el-dropdown-menu style="width: 100%;">
-                <el-dropdown-item command="invite">
+                <el-dropdown-item :disabled="true">
+                  <v-icon icon="mdi-email" size="small" class="mr-2"></v-icon>
+                  {{ chatStore.userInfo?.username }}
+                </el-dropdown-item>
+                <el-dropdown-item command="invite" divided>
                   <v-icon icon="mdi-account-plus" size="small" class="mr-2"></v-icon>
                   邀请用户
                 </el-dropdown-item>
@@ -200,7 +204,7 @@
 </template>
 
 <script setup>
-import { mergeProps, nextTick, onMounted, onUnmounted, ref, watch, reactive } from 'vue'
+import { mergeProps, nextTick, onMounted, onUnmounted, ref, watch, reactive, computed } from 'vue'
 import bus from "@/js/bus";
 import { useChatStore, useUserStore } from "@/js/store";
 import { useRoute } from 'vue-router';
@@ -273,6 +277,22 @@ const editTitleForm = reactive({
   title: ''
 })
 const editTitleLoading = ref(false)
+
+// 添加邮箱格式化的计算属性
+const maskedEmail = computed(() => {
+  const email = chatStore.userInfo?.username || '';
+  if (!email) return '';
+
+  const [localPart, domain] = email.split('@');
+  if (!domain) return email;
+
+  let maskedLocal = localPart;
+  if (localPart.length > 2) {
+    maskedLocal = localPart.charAt(0) + '*'.repeat(localPart.length - 2) + localPart.charAt(localPart.length - 1);
+  }
+
+  return `${maskedLocal}@${domain}`;
+});
 
 onMounted(async () => {
   const loading = ElLoading.service({
