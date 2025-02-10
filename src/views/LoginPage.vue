@@ -5,7 +5,13 @@
         <v-form ref="loginRef" class="sign-in-form py-4" v-if="!showForgotPasswordForm">
           <v-card elevation="5" class="mx-auto pa-12 pb-8 flip-card pb-3" rounded="lg"
             :width="!chatStore.xs ? '65%' : '100%'">
-            <h2 class="text-center" style="margin-bottom:20px">登&nbsp&nbsp录</h2>
+            <div class="logo-container">
+              <v-icon icon="mdi-robot" color="primary" size="48" class="logo-icon"></v-icon>
+              <h1 class="logo-text">EasyAI</h1>
+            </div>
+            <div class="logo-subtitle">AI 助手，让对话更轻松</div>
+
+            <h2 class="text-center login-title">登&nbsp;&nbsp;录</h2>
             <v-text-field class="my-2" label="邮箱" color="#2F94F1" density="compact" variant="outlined" v-model="email"
               :error="emailError" @click="emailError = false" :error-messages="emailError ? [emailErrorMessage] : []"
               @keyup.enter="handleLogin">
@@ -29,10 +35,15 @@
         </v-form>
 
         <v-form ref="signUpRef" class="sign-up-form py-4" v-if="!showForgotPasswordForm">
-
-          <v-card class="mx-auto pa-12 pb-8 flip-card " elevation="5" rounded="lg"
+          <v-card class="mx-auto pa-12 pb-8 flip-card" elevation="5" rounded="lg"
             :width="!chatStore.xs ? '65%' : '100%'">
-            <h2 class="text-center">注&nbsp&nbsp册</h2>
+            <div class="logo-container">
+              <v-icon icon="mdi-robot" color="primary" size="48" class="logo-icon"></v-icon>
+              <h1 class="logo-text">EasyAI</h1>
+            </div>
+            <div class="logo-subtitle">AI 助手，让对话更轻松</div>
+
+            <h2 class="text-center login-title">注&nbsp;&nbsp;册</h2>
             <v-text-field class="my-2" label="邮箱" color="#2F94F1" density="compact" placeholder="邮箱" variant="outlined"
               v-model="email" :error="emailError" @click="emailError = false"
               :error-messages="emailError ? [emailErrorMessage] : []">
@@ -76,20 +87,38 @@
     <div class="panels-container">
       <div class="panel left-panel">
         <div class="content">
-          <h3>新用户 ?</h3>
-          <p>输入您的信息成为我们的用户</p>
-          <v-btn color="white" size="large" block @click="showRegister">
-            注册
-          </v-btn>
+          <div class="welcome-content">
+            <div class="feature-list">
+              <div class="feature-item">
+                <v-icon icon="mdi-brain" color="white" size="20" class="feature-icon"></v-icon>
+                <span>智能对话，自然流畅</span>
+              </div>
+              <div class="feature-item">
+                <v-icon icon="mdi-lightning-bolt" color="white" size="20" class="feature-icon"></v-icon>
+                <span>快速响应，高效助手</span>
+              </div>
+              <div class="feature-item">
+                <v-icon icon="mdi-shield-check" color="white" size="20" class="feature-icon"></v-icon>
+                <span>安全可靠，隐私保护</span>
+              </div>
+            </div>
+            <p class="welcome-description">新用户？立即加入我们，开启智能对话之旅</p>
+            <v-btn color="white" size="large" block @click="showRegister" class="action-btn">
+              <span class="action-btn-text">免费注册</span>
+            </v-btn>
+          </div>
         </div>
       </div>
       <div class="panel right-panel" :class="{ 'py-2': chatStore.xs, 'align-start': chatStore.xs }">
         <div class="content">
-          <h3>已有账号 ?</h3>
-          <p>请登录以使用我们的EasyAI !</p>
-          <v-btn color="white" size="large" block @click="showLogin">
-            登录
-          </v-btn>
+          <div class="welcome-content">
+            <v-icon icon="mdi-account-check" color="white" size="64" class="welcome-icon"></v-icon>
+            <h3 class="welcome-title">欢迎回来</h3>
+            <p class="welcome-description">已有账号？立即登录使用全部功能</p>
+            <v-btn color="white" size="large" block @click="showLogin" class="action-btn">
+              <span class="action-btn-text">立即登录</span>
+            </v-btn>
+          </div>
         </div>
       </div>
     </div>
@@ -777,5 +806,202 @@ form.sign-in-form {
 
 .login-button:active {
   transform: translateY(1px);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  animation: fadeInDown 0.8s ease;
+}
+
+.logo-icon {
+  margin-right: 12px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.logo-text {
+  font-size: 2.5rem;
+  font-weight: 600;
+  background: linear-gradient(45deg, #4481eb, #04befe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.logo-subtitle {
+  text-align: center;
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+  animation: fadeIn 1s ease;
+}
+
+.login-title {
+  margin: 0 0 24px 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo-text {
+    font-size: 2rem;
+  }
+
+  .logo-icon {
+    font-size: 36px;
+  }
+
+  .logo-subtitle {
+    font-size: 0.85rem;
+  }
+}
+
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 400px;
+  animation: fadeIn 1s ease;
+}
+
+.welcome-icon {
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.welcome-title {
+  font-size: 2rem !important;
+  font-weight: 600;
+  margin-bottom: 24px !important;
+  letter-spacing: 1px;
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 24px 0;
+  width: 100%;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px 20px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease;
+}
+
+.feature-item:hover {
+  transform: translateX(10px);
+}
+
+.feature-icon {
+  opacity: 0.9;
+}
+
+.welcome-description {
+  font-size: 1rem !important;
+  opacity: 0.9;
+  margin: 16px 0 24px 0 !important;
+  line-height: 1.6;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.6) !important;
+  height: 48px !important;
+  font-size: 1rem !important;
+  letter-spacing: 1px;
+  transition: all 0.3s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.action-btn:hover::before {
+  opacity: 1;
+}
+
+.action-btn-text {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+
+/* 适配移动端 */
+@media (max-width: 768px) {
+  .welcome-title {
+    font-size: 1.5rem !important;
+  }
+
+  .feature-item {
+    font-size: 0.9rem;
+    padding: 10px 16px;
+  }
+
+  .welcome-description {
+    font-size: 0.9rem !important;
+  }
+
+  .feature-list {
+    gap: 12px;
+  }
 }
 </style>
