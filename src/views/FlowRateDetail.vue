@@ -149,7 +149,7 @@ onMounted(async () => {
     background: 'rgba(255, 255, 255, 0.7)',
   })
   try {
-    console.log("?");
+
     const getModelUsagePromise = getModelUsage().catch(error => {
       if (error.code === 500) {
         notification.error('加载模型使用情况失败！', error.msg);
@@ -170,9 +170,6 @@ onMounted(async () => {
       getModelUsagePromise,
       getTokenPromise
     ]);
-    console.log("????????????")
-    console.log(usageDataRes);
-    console.log(userInfoRes);
     if (usageDataRes) {
       usageData.value = usageDataRes;
     }

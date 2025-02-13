@@ -343,7 +343,9 @@ onMounted(async () => {
     chatStore.shouldAutoScroll = !chatStore.shouldAutoScroll;
   });
   bus.on('logout', logoutModule.value.showLogoutConfirmation);
-  bus.on('regenerateResponse', handleRegenerate);
+  bus.on('regenerateResponse', (content,session_id)=>{
+    handleRegenerate(content,session_id);
+  });
 })
 onUnmounted(() => {
   bus.off('finishUserRequest');
@@ -367,7 +369,6 @@ const loadChat = async (sessionId) => {
   })
   try {
     const temp = await getMessageList(sessionId);
-    console.log(temp);
     switchChat(sessionId, temp.title, temp.messageListBodyList)
     nextTick(() => {
       bus.emit('scrollToBottom');
@@ -375,6 +376,7 @@ const loadChat = async (sessionId) => {
   } catch (error) {
     if (error.code === 500) {
       notification.error('加载对话失败！', error.msg, 3000, 'top-right');
+      chatList.value = chatList.value.filter(chat => chat.sessionId !== sessionId);
     } else if (error.code === 501) {
       notification.networkError();
     }
@@ -493,10 +495,8 @@ const sendMessage = async (selectedSessionId, parentId, inputText) => {
           }
           chatStore.lastAiMessage.content = chatStore.lastAiMessage.content + content
         }
-        console.log(content)
       },
       onConclude: (session_id, content) => {
-        console.log(content);
         chatStore.isChatting = false;
       },
       onError: (session_id, content) => {
@@ -604,11 +604,14 @@ const handleMouseLeave = () => {
 };
 
 
-const handleRegenerate = (content) => {
+const handleRegenerate = (content,session_id) => {
+  console.log(content);
+  console.log(session_id);
   chatStore.messageList.pop();
   chatStore.messageList.pop();
   if (chatStore.messageList.length === 0) {
-    chatStore.parentId = null;
+    chatList.value = chatList.value.filter(chat => chat.sessionId !== session_id);
+    switchNewChat();
   } else {
     chatStore.parentId = chatStore.messageList[chatStore.messageList.length - 1].messageId;
   }

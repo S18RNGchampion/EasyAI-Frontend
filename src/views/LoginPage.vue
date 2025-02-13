@@ -25,6 +25,16 @@
             <el-button type="primary" :loading="loginLoading" class="login-button" @click="handleLogin">
               {{ loginLoading ? '登录中...' : '登录' }}
             </el-button>
+
+            <!-- 添加移动端的注册入口 -->
+            <div class="mobile-register-section">
+              <div class="divider">
+              </div>
+              <v-btn variant="outlined" color="primary" block class="register-button" @click="showRegister">
+                创建新账号
+              </v-btn>
+            </div>
+
             <div class="text-center mt-2">
               <router-link to="/reset-password" class="text-decoration-none"
                 style="text-decoration: #3291F0;">忘记密码？</router-link>
@@ -77,6 +87,15 @@
             <v-btn class="mb-8" color="#2F94F1" size="large" block @click="handleRegister" style="margin:6% 0 0 0">
               注册
             </v-btn>
+
+            <!-- 添加仅移动端显示的登录入口 -->
+            <div class="mobile-only-login-section">
+              <div class="divider">
+              </div>
+              <v-btn variant="outlined" color="primary" block class="login-link-button" @click="showLogin">
+                返回登录
+              </v-btn>
+            </div>
           </v-card>
         </v-form>
 
@@ -257,7 +276,6 @@ async function handleLogin() {
     try {
       loginLoading.value = true;
       const data = await login(email.value, password.value);
-      console.log(data.access_token)
       localStorage.setItem("token", data.access_token);
       notification.success('登录成功！', '登录成功！即将跳转！')
       setTimeout(() => {
@@ -875,16 +893,195 @@ form.sign-in-form {
 }
 
 @media (max-width: 768px) {
+  .container {
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .forms-container {
+    position: relative;
+    height: 100vh;
+  }
+
+  .signin-signup {
+    position: relative;
+    left: 0;
+    top: 0;
+    transform: none;
+    width: 100%;
+    padding: 16px;
+    transition: none;
+  }
+
+  .sign-in-form,
+  .sign-up-form {
+    padding: 0;
+  }
+
+  .v-card {
+    width: 100% !important;
+    padding: 24px !important;
+  }
+
+  .logo-container {
+    margin-top: 40px;
+  }
+
   .logo-text {
     font-size: 2rem;
   }
 
-  .logo-icon {
-    font-size: 36px;
+  .logo-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+
+  .login-title {
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+  }
+
+  /* 隐藏装饰性元素 */
+  .container:before {
+    display: none;
+  }
+
+  .panels-container {
+    display: none;
+  }
+
+  /* 表单元素适配 */
+  .v-text-field {
+    margin-bottom: 16px !important;
+  }
+
+  .login-button {
+    height: 44px;
+    margin: 8px 0;
+  }
+
+  /* 注册表单特殊处理 */
+  .container.sign-up-mode .signin-signup {
+    left: 0;
+    transform: none;
+  }
+
+  .container.sign-up-mode form.sign-up-form {
+    opacity: 1;
+    z-index: 2;
+    transform: translateX(0);
+  }
+
+  .container.sign-up-mode form.sign-in-form {
+    opacity: 0;
+    z-index: 1;
+    transform: translateX(-100%);
+  }
+
+  /* 验证码输入框布局优化 */
+  div[style*="display: flex;align-items: center;justify-content: flex-end"] {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  div[style*="display: flex;align-items: center;justify-content: flex-end"] .v-text-field {
+    width: 100%;
+    margin-bottom: 8px !important;
+  }
+
+  div[style*="display: flex;align-items: center;justify-content: flex-end"] .el-button {
+    width: 100%;
+    margin: 0;
+    height: 44px;
+  }
+
+  /* 忘记密码链接位置调整 */
+  .text-center.mt-2 {
+    margin-top: 16px !important;
+  }
+
+  /* 动画优化 */
+  .flip-card {
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .mobile-register-section {
+    display: block;
+    margin-top: 24px;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 16px 0;
+  }
+
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .divider span {
+    padding: 0 16px;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .register-button {
+    margin-top: 16px;
+    height: 44px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0.5px;
+  }
+
+  /* 仅在移动端显示登录入口 */
+  .mobile-only-login-section {
+    display: block;
+    margin-top: 24px;
+  }
+
+  .login-link-button {
+    margin-top: 16px;
+    height: 44px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0.5px;
+  }
+}
+
+/* 超小屏幕适配 */
+@media (max-width: 375px) {
+  .v-card {
+    padding: 20px !important;
+  }
+
+  .logo-text {
+    font-size: 1.75rem;
   }
 
   .logo-subtitle {
     font-size: 0.85rem;
+  }
+
+  .login-title {
+    font-size: 1.2rem;
   }
 }
 
@@ -1002,6 +1199,30 @@ form.sign-in-form {
 
   .feature-list {
     gap: 12px;
+  }
+}
+
+/* 默认隐藏移动端登录入口 */
+.mobile-only-login-section {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* ... 其他移动端样式 ... */
+
+  /* 仅在移动端显示登录入口 */
+  .mobile-only-login-section {
+    display: block;
+    margin-top: 24px;
+  }
+
+  .login-link-button {
+    margin-top: 16px;
+    height: 44px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0.5px;
   }
 }
 </style>

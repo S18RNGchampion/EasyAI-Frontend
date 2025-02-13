@@ -10,7 +10,7 @@
 
             <el-form :model="form" ref="formRef" :rules="rules" class="code-form">
                 <el-form-item prop="code">
-                    <el-input v-model="form.code" placeholder="请输入口令" :prefix-icon="Gift" clearable class="code-input"
+                    <el-input v-model="form.code" placeholder="请输入口令"  clearable class="code-input"
                         @keyup.enter="handleSubmit" />
                 </el-form-item>
             </el-form>

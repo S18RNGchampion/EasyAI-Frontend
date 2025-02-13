@@ -371,8 +371,9 @@ function checkInput() {
 // 取消对话
 function preventConversion() {
   message.info("暂停生成暂未上线",1500);
+  chatStore.isChatting = false;
   // bus.emit('finishUserRequest');
-  // chatStore.isChatting = false;
+
 }
 
 // 文件上传相关函数

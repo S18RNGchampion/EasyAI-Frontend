@@ -7,7 +7,7 @@
         <!-- 头像 -->
         <div class="avatar-container">
           <v-avatar size="36" :color="message.role === 'User' ? 'primary' : 'white'" class="message-avatar">
-            <v-icon v-if="message.role==='User'" icon="mdi-account" color="white"></v-icon>
+            <v-icon v-if="message.role === 'User'" icon="mdi-account" color="white"></v-icon>
             <v-icon v-else icon="mdi-robot" color="primary" size="27"></v-icon>
           </v-avatar>
         </div>
@@ -50,8 +50,9 @@
               </v-fade-transition>
             </template>
             <template v-else>
-              <v-btn color="error" variant="tonal" size="small" class="regenerate-btn" @click="regenerateResponse"
-                :disabled="chatStore.isChatting" prepend-icon="mdi-refresh">
+              <v-btn color="error" variant="tonal" size="small" class="regenerate-btn"
+                @click="regenerateResponse(chatStore.selectedSessionId)" :disabled="chatStore.isChatting"
+                prepend-icon="mdi-refresh">
                 重新生成
               </v-btn>
             </template>
@@ -217,7 +218,6 @@ const copyToClipboard = (message, index) => {
         message.copyStatus = '复制全文';
         message.copyIcon = 'copyIcon';
       }, 1000);
-      console.log("old copy success");
     } catch (err) {
       console.error('Failed to copy: ', err);
     }
@@ -236,12 +236,13 @@ watch(() => props.chat, () => {
 }, { deep: true });
 
 // 添加重新生成函数
-const regenerateResponse = () => {
+const regenerateResponse = (session_id) => {
+  console.log(session_id)
   if (props.chat.length >= 2) {
     const lastUserMessage = props.chat[props.chat.length - 2];
     if (lastUserMessage && lastUserMessage.role === 'User') {
-      // 发出重新生成的事件
-      bus.emit('regenerateResponse', lastUserMessage.content);
+      // 发出重新生成的事件，传递两个参数
+      bus.emit('regenerateResponse', { content: lastUserMessage.content, session_id: session_id });
     }
   }
 };

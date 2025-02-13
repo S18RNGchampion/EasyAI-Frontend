@@ -28,7 +28,7 @@ instance.interceptors.request.use(config => {
 // 响应拦截器（统一处理响应和错误）
 instance.interceptors.response.use(
   response => {
-    console.log(response)
+
     // 如果接口有标准的成功标识，例如 `code: 200`
     if (response.data.code === 200) {
       return response.data;
@@ -37,7 +37,7 @@ instance.interceptors.response.use(
       handleTokenExpired();
       return Promise.reject(new CustomError(401, "登录已过期，请重新登录"));
     } else {
-      console.log(response.data.msg)
+      
       return Promise.reject(new CustomError(response.data.code,(response.data.msg || "未知错误")));
     }
   },
