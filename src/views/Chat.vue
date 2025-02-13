@@ -343,7 +343,9 @@ onMounted(async () => {
     chatStore.shouldAutoScroll = !chatStore.shouldAutoScroll;
   });
   bus.on('logout', logoutModule.value.showLogoutConfirmation);
-  bus.on('regenerateResponse', (content,session_id)=>{
+  bus.on('regenerateResponse', (data)=>{
+    const {content}=data;
+    const {session_id}=data;
     handleRegenerate(content,session_id);
   });
 })
