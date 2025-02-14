@@ -135,41 +135,7 @@ onUnmounted(() => {
   bus.off('chatStart');
 })
 
-
-
-
-// scrollTop 距离滑到对话顶部距离
-const scrollToBottom = () => {
-  if (!chatContainer.value) return;
-  if (!chatStore.isChatting) return;
-  if (!isUserScrolling.value) {
-    disableScrollHandler.value = true;
-    const container = chatContainer.value;
-    const scrollOptions = {
-      top: container.scrollHeight,
-    };
-    container.scrollTo(scrollOptions);
-    lastScrollTop.value = container.scrollHeight;
-
-    setTimeout(() => {
-      disableScrollHandler.value = false;
-    }, 100);
-  }
-};
-/**
- * 供外部调用！
- */
-const exportScrollToBottom = () => {
-  disableScrollHandler.value = true;
-  chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
-  lastScrollTop.value = chatContainer.value.scrollTop;
-  showScrollButton.value = false;
-  isUserScrolling.value = false;
-  setTimeout(() => {
-    disableScrollHandler.value = false;
-  }, 100);
-};
-
+// 修改滚动处理函数
 const handleScroll = () => {
   if (disableScrollHandler.value) return;
 
@@ -179,21 +145,58 @@ const handleScroll = () => {
   // 计算距离底部的距离
   const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
 
-  // 控制按钮显示
+  // 控制返回底部按钮的显示
   showScrollButton.value = distanceFromBottom > 200;
 
-  // 如果用户向上滚动超过20px，则标记为用户正在滚动
-  if (scrollTop < lastScrollTop.value - 20) {
+  // 如果用户向上滚动超过50px，标记为用户正在滚动
+  if (Math.abs(scrollTop - lastScrollTop.value) > 50) {
     isUserScrolling.value = true;
   }
 
-  // 如果距离底部小于100px，则自动吸附到底部
-  if (distanceFromBottom < 100) {
+  // 如果距离底部很近，重置滚动状态
+  if (distanceFromBottom < 10) {
     isUserScrolling.value = false;
-    scrollToBottom();
   }
 
   lastScrollTop.value = scrollTop;
+};
+
+// 修改滚动到底部的函数
+const scrollToBottom = () => {
+  if (!chatContainer.value) return;
+
+  // 如果正在对话且用户没有主动滚动，或者强制滚动
+  if (chatStore.isChatting && !isUserScrolling.value) {
+    disableScrollHandler.value = true;
+    const container = chatContainer.value;
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: 'smooth'
+    });
+
+    setTimeout(() => {
+      disableScrollHandler.value = false;
+    }, 100);
+  }
+};
+
+// 导出的滚动到底部函数（用于外部调用）
+const exportScrollToBottom = () => {
+  disableScrollHandler.value = true;
+  const container = chatContainer.value;
+
+  container.scrollTo({
+    top: container.scrollHeight,
+    behavior: 'smooth'
+  });
+
+  lastScrollTop.value = container.scrollHeight;
+  showScrollButton.value = false;
+  isUserScrolling.value = false;
+
+  setTimeout(() => {
+    disableScrollHandler.value = false;
+  }, 100);
 };
 
 const copyToClipboard = (message, index) => {
@@ -238,14 +241,15 @@ const copyToClipboard = (message, index) => {
   }
 };
 
-
-// 添加新的监听器
+// 监听消息变化
 watch(() => props.chat, () => {
-  if (!isUserScrolling.value) {
-    nextTick(() => {
+  nextTick(() => {
+    // 如果正在对话且用户没有主动滚动，或者是最后一条消息
+    if ((chatStore.isChatting && !isUserScrolling.value) ||
+        (props.chat.length > 0 && props.chat[props.chat.length - 1].role === 'AI')) {
       scrollToBottom();
-    });
-  }
+    }
+  });
 }, { deep: true });
 
 // 添加重新生成函数
