@@ -235,6 +235,9 @@ const chatStore = useChatStore();
 const userStore = useUserStore();
 
 const switchNewChat = () => {
+  if (checkIsChatting()) {
+    return;
+  }
   chatStore.isNewChat = true;
   chatStore.selectedSessionId = null;
   chatStore.parentId = null;
@@ -343,10 +346,10 @@ onMounted(async () => {
     chatStore.shouldAutoScroll = !chatStore.shouldAutoScroll;
   });
   bus.on('logout', logoutModule.value.showLogoutConfirmation);
-  bus.on('regenerateResponse', (data)=>{
-    const {content}=data;
-    const {session_id}=data;
-    handleRegenerate(content,session_id);
+  bus.on('regenerateResponse', (data) => {
+    const { content } = data;
+    const { session_id } = data;
+    handleRegenerate(content, session_id);
   });
 })
 onUnmounted(() => {
@@ -357,11 +360,13 @@ onUnmounted(() => {
 })
 
 
-const loadChat = async (sessionId) => {
-  if (chatStore.isChatting) {
-    bus.emit("preventConversion");
-  }
+const loadChat = async (sessionId, init = false) => {
+  // 如果当前对话id与要加载的对话id相同 则不加载
   if (chatStore.selectedSessionId === sessionId) {
+    return;
+  }
+  // 如果正在对话中 则不加载
+  if (!init && checkIsChatting()) {
     return;
   }
   const loading = ElLoading.service({
@@ -389,7 +394,7 @@ const loadChat = async (sessionId) => {
 
 watch(route, () => {
   if (route.params.sessionId) {
-    loadChat(route.params.sessionId);
+    loadChat(route.params.sessionId,true);
     nextTick(() => {
       bus.emit('scrollToBottom');
     });
@@ -419,6 +424,9 @@ let deleteModule = ref({
       background: 'rgba(255, 255, 255, 0.7)',
     })
     try {
+      if (checkIsChatting()) {
+        return;
+      }
       await deleteChatBySessionId(deleteModule.value.deleteSessionId);
       chatList.value = chatList.value.filter(chat => chat.sessionId !== deleteModule.value.deleteSessionId);
       if (deleteModule.value.deleteSessionId === chatStore.selectedSessionId) {
@@ -467,6 +475,17 @@ let logoutModule = ref({
   },
 })
 
+/**
+ * 如果正在对话中 提示正在对话中 请等待回复完成 返回true 否则返回false
+ */
+const checkIsChatting = () => {
+  if (chatStore.isChatting) {
+    message.success("正在对话中，请等待回复完成", 1500);
+    return true;
+  } else {
+    return false;
+  }
+}
 
 const sendMessage = async (selectedSessionId, parentId, inputText) => {
   try {
@@ -536,7 +555,7 @@ const submitConversion = (data) => {
   chatStore.messageList.push(chatStore.lastUserMessage);
   chatStore.lastAiMessage = {
     role: 'AI',
-    content: '模型思考中...',
+    content: 'thinking',  // 使用特殊标记来表示思考状态
     parentId: null,
     messageId: null,
   }
@@ -606,7 +625,7 @@ const handleMouseLeave = () => {
 };
 
 
-const handleRegenerate = (content,session_id) => {
+const handleRegenerate = (content, session_id) => {
   console.log(content);
   console.log(session_id);
   chatStore.messageList.pop();

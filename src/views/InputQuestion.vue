@@ -38,7 +38,7 @@
         max-rows="8"
         class="chat-input"
         @input="countRow"
-        @keydown.enter.exact.prevent="checkInput"
+        @keydown.enter.exact.prevent="checkInputAndSend"
       >
         <!-- 左侧工具按钮 -->
         <template #prepend>
@@ -68,7 +68,7 @@
               size="small"
               class="send-button"
               :disabled="!inputText.trim()"
-              @click="checkInput"
+              @click="checkInputAndSend"
             ></v-btn>
             <v-btn
               v-else
@@ -127,6 +127,122 @@
   </div>
 </template>
 
+<script setup>
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import bus from "@/js/bus";
+import { useChatStore } from "@/js/store";
+import message from "@/utils/message";
+const emit = defineEmits(['submitConversion']);
+const chatStore = useChatStore();
+
+// 输入相关
+const inputText = ref('');
+const fileInput = ref(null);
+const isUploadFile = ref(false);
+const fileUrl = ref('');
+const isImage = ref(false);
+const isPreviewUploadImage = ref(false);
+
+// 文件类型限制
+const supportedFileTypes = [
+  'image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+];
+
+// 提示消息
+const snackBar = ref({
+  show: false,
+  status: false,
+  title: '',
+  width: '',
+});
+
+// 监听文件URL变化
+watch(fileUrl, () => {
+  isImage.value = fileUrl.value.startsWith('data:image/');
+});
+
+onMounted(() => {
+  bus.on('preventConversion', preventConversion);
+});
+
+onUnmounted(() => {
+  bus.off('preventConversion', preventConversion);
+});
+
+// 检查输入并发送
+function checkInputAndSend() {
+  // 如果正在对话中，直接返回不执行发送
+  if (chatStore.isChatting) {
+    message.success("正在对话中，请等待回复完成", 1500);
+    return;
+  }
+
+  if (inputText.value.trim() !== '') {
+    emit('submitConversion', { inputText: inputText.value });
+    inputText.value = "";
+  }
+}
+
+// 取消对话
+function preventConversion() {
+  message.info("暂停生成暂未上线",1500);
+  // chatStore.isChatting = false;
+  // bus.emit('finishUserRequest');
+
+}
+
+// 文件上传相关函数
+function handleFileUpload() {
+  message.info("上传文件暂未上线",1500);
+  // fileInput.value.click();
+}
+
+function handleFileChange(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (!supportedFileTypes.includes(file.type)) {
+    snackBar.value = {
+      show: true,
+      status: false,
+      title: '不支持的文件类型',
+    };
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    fileUrl.value = reader.result;
+    isUploadFile.value = true;
+    snackBar.value = {
+      show: true,
+      status: true,
+      title: '文件上传成功',
+    };
+  };
+  reader.readAsDataURL(file);
+}
+
+function cancelUploadImage() {
+  isUploadFile.value = false;
+  fileUrl.value = '';
+}
+
+function previewUploadImage() {
+  if (isImage.value) {
+    isPreviewUploadImage.value = true;
+  }
+}
+
+// 计算输入框行数
+function countRow() {
+  const textarea = document.querySelector('.chat-input textarea');
+  if (textarea) {
+    chatStore.inputRow = Math.min(5, Math.floor((textarea.scrollHeight / 24)) - 1);
+  }
+}
+</script>
 <style scoped>
 .input-wrapper {
   position: relative;
@@ -316,114 +432,3 @@
   }
 }
 </style>
-
-<script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import bus from "@/js/bus";
-import { useChatStore } from "@/js/store";
-import message from "@/utils/message";
-const emit = defineEmits(['submitConversion']);
-const chatStore = useChatStore();
-
-// 输入相关
-const inputText = ref('');
-const fileInput = ref(null);
-const isUploadFile = ref(false);
-const fileUrl = ref('');
-const isImage = ref(false);
-const isPreviewUploadImage = ref(false);
-
-// 文件类型限制
-const supportedFileTypes = [
-  'image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-];
-
-// 提示消息
-const snackBar = ref({
-  show: false,
-  status: false,
-  title: '',
-  width: '',
-});
-
-// 监听文件URL变化
-watch(fileUrl, () => {
-  isImage.value = fileUrl.value.startsWith('data:image/');
-});
-
-onMounted(() => {
-  bus.on('preventConversion', preventConversion);
-});
-
-onUnmounted(() => {
-  bus.off('preventConversion', preventConversion);
-});
-
-// 检查输入并发送
-function checkInput() {
-  if (inputText.value.trim() !== '') {
-    emit('submitConversion', { inputText: inputText.value });
-    inputText.value = "";
-  }
-}
-
-// 取消对话
-function preventConversion() {
-  message.info("暂停生成暂未上线",1500);
-  chatStore.isChatting = false;
-  // bus.emit('finishUserRequest');
-
-}
-
-// 文件上传相关函数
-function handleFileUpload() {
-  message.info("上传文件暂未上线",1500);
-  // fileInput.value.click();
-}
-
-function handleFileChange(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  if (!supportedFileTypes.includes(file.type)) {
-    snackBar.value = {
-      show: true,
-      status: false,
-      title: '不支持的文件类型',
-    };
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    fileUrl.value = reader.result;
-    isUploadFile.value = true;
-    snackBar.value = {
-      show: true,
-      status: true,
-      title: '文件上传成功',
-    };
-  };
-  reader.readAsDataURL(file);
-}
-
-function cancelUploadImage() {
-  isUploadFile.value = false;
-  fileUrl.value = '';
-}
-
-function previewUploadImage() {
-  if (isImage.value) {
-    isPreviewUploadImage.value = true;
-  }
-}
-
-// 计算输入框行数
-function countRow() {
-  const textarea = document.querySelector('.chat-input textarea');
-  if (textarea) {
-    chatStore.inputRow = Math.min(5, Math.floor((textarea.scrollHeight / 24)) - 1);
-  }
-}
-</script>

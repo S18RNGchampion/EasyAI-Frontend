@@ -1,12 +1,14 @@
 <!-- App.vue -->
 <template>
-  <hr style="border: none; height: 2px; background-color: black; box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2); margin: 20px 0;">
 
+  <div style="background-color: red;width:400px;height: 400px;margin-top:20px">
+    <div style="background-color: green;width: 200px;height: 200px;margin-top: 20px">
+      123
+      456
+      789
+    </div>
 
-
-
-
-
+  </div>
 </template>
 
 <script setup>
