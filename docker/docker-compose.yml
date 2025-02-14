@@ -7,6 +7,7 @@ services:
       context: ./nginx
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/html/dist:/home/easyai/projects/easyai-ui
       - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf

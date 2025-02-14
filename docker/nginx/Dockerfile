@@ -13,3 +13,10 @@ WORKDIR /home/easyai/projects/easyai-frontend
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 # 复制html文件到路径
 COPY ./html/dist /home/easyai/projects/easyai-frontend
+# 复制证书
+COPY ./cert/easyai.host_bundle.crt /etc/nginx/ssl/easyai.host_bundle.crt
+COPY ./cert/easyai.host.key /etc/nginx/ssl/easyai.host.key
+COPY ./cert/easyai.host_bundle.pem /etc/nginx/ssl/easyai.host_bundle.pem
+RUN chmod 644 /etc/nginx/ssl/easyai.host_bundle.pem \
+    && chmod 644 /etc/nginx/ssl/easyai.host.key \
+    && chmod 644 /etc/nginx/ssl/easyai.host_bundle.crt

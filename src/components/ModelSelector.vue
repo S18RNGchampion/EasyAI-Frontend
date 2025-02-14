@@ -40,7 +40,8 @@
               </template>
               <v-list-item-title class="model-item-content">
                 <span class="model-name">{{ model.modelName }}</span>
-                <span class="model-price">{{ model.price }} tokens/次</span>
+                <span class="model-price" v-if="model.price!==0">{{ model.price }} tokens/次</span>
+                <span class="model-price" v-else>免费</span>
               </v-list-item-title>
             </v-list-item>
           </v-list>
