@@ -78,6 +78,9 @@ async function chat(userMessage, modelName, session_id = null, parent_id = null,
             case 'start':
               options.onStart?.(data.session_id, data.content)
               break
+            case 'thinking':
+              options.onThink?.(data.content)
+              break
             case 'chat':
               options.onMessage?.(data.content)
               break

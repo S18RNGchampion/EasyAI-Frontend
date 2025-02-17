@@ -394,7 +394,7 @@ const loadChat = async (sessionId, init = false) => {
 
 watch(route, () => {
   if (route.params.sessionId) {
-    loadChat(route.params.sessionId,true);
+    loadChat(route.params.sessionId, true);
     nextTick(() => {
       bus.emit('scrollToBottom');
     });
@@ -489,7 +489,8 @@ const checkIsChatting = () => {
 
 const sendMessage = async (selectedSessionId, parentId, inputText) => {
   try {
-    let first = ref(true);
+    let messageFirst = ref(true);
+    let thinkingFirst = ref(true);
     await chat(inputText, chatStore.selectedModel, selectedSessionId, parentId, {
       onStart: (session_id, data) => {
         if (data.parent_id == null) {
@@ -508,10 +509,19 @@ const sendMessage = async (selectedSessionId, parentId, inputText) => {
         chatStore.parentId = data.ai_message_id;
 
       },
+      onThink: (content) => {
+        if (thinkingFirst.value) {
+          thinkingFirst.value = false;
+          chatStore.lastAiMessage.thinkingContent = "";
+        }else{
+          chatStore.lastAiMessage.thinkingContent = chatStore.lastAiMessage.thinkingContent + content;
+        }
+
+      },
       onMessage: (content) => {
         if (content) {
-          if (first.value) {
-            first.value = false;
+          if (messageFirst.value) {
+            messageFirst.value = false;
             chatStore.lastAiMessage.content = "";
           }
           chatStore.lastAiMessage.content = chatStore.lastAiMessage.content + content
@@ -555,9 +565,10 @@ const submitConversion = (data) => {
   chatStore.messageList.push(chatStore.lastUserMessage);
   chatStore.lastAiMessage = {
     role: 'AI',
-    content: 'thinking',  // 使用特殊标记来表示思考状态
+    content: '',  // 使用特殊标记来表示思考状态
     parentId: null,
     messageId: null,
+    thinkingContent: null,
   }
   chatStore.messageList.push(chatStore.lastAiMessage);
   nextTick(() => {

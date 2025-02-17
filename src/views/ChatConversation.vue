@@ -27,13 +27,34 @@
           <!-- AI消息 -->
           <div v-else :class="['ai-message-bubble', { 'error-bubble': message.isError }]">
             <!-- 思考中状态 -->
-            <div v-if="message.content === 'thinking'" class="thinking-container">
-              <el-icon class="thinking-icon"><Loading /></el-icon>
+            <div v-if="message.content === ''" class="thinking-container">
+              <el-icon class="thinking-icon">
+                <Loading />
+              </el-icon>
               <span class="thinking-text">AI 正在思考</span>
               <span class="thinking-dots"></span>
             </div>
-            <!-- 正常消息内容 -->
-            <MdPreview v-else :modelValue="message.content" previewTheme="github" :codeFoldable="false" :noImgZoomIn="true" />
+
+            <!-- 思考内容区域 -->
+            <div v-if="message.thinkingContent" class="thinking-process">
+              <div class="thinking-header" @click="toggleThinking(index)">
+                <el-icon class="toggle-icon" :class="{ 'is-fold': thinkingFoldMap[index] }">
+                  <ArrowDown />
+                </el-icon>
+                <span class="thinking-title">思考过程</span>
+              </div>
+              <div class="thinking-content" v-show="!thinkingFoldMap[index]">
+                {{ message.thinkingContent }}
+              </div>
+            </div>
+
+            <div>
+              <div>
+                <MdPreview v-if="message.content!==''" :modelValue="message.content" previewTheme="github" :codeFoldable="false"
+                  :noImgZoomIn="true" />
+              </div>
+            </div>
+
           </div>
 
           <!-- 操作按钮 -->
@@ -91,7 +112,7 @@ import 'github-markdown-css/github-markdown.css';
 import { toPng } from 'html-to-image';
 import MarkdownIt from 'markdown-it';
 import { shareAsImage } from '@/utils/shareImage';
-import { Loading } from '@element-plus/icons-vue'
+import { Loading, Monitor, ArrowDown } from '@element-plus/icons-vue'
 
 const chatContainer = ref(null);
 
@@ -119,6 +140,9 @@ const selectedConversion = ref(null);  //选择对话的编号 控制下方按�
 
 // 添加控制按钮显示的响应式变量
 const showScrollButton = ref(false);
+
+// 添加折叠状态管理
+const thinkingFoldMap = ref({});
 
 onMounted(() => {
   bus.on('scrollToBottom', () => {
@@ -246,7 +270,7 @@ watch(() => props.chat, () => {
   nextTick(() => {
     // 如果正在对话且用户没有主动滚动，或者是最后一条消息
     if ((chatStore.isChatting && !isUserScrolling.value) ||
-        (props.chat.length > 0 && props.chat[props.chat.length - 1].role === 'AI')) {
+      (props.chat.length > 0 && props.chat[props.chat.length - 1].role === 'AI')) {
       scrollToBottom();
     }
   });
@@ -273,6 +297,11 @@ const md = new MarkdownIt({
 
 const handleShare = (message, index) => {
   shareAsImage(message, props.chat, index);
+};
+
+// 切换思考内容的显示/隐藏
+const toggleThinking = (index) => {
+  thinkingFoldMap.value[index] = !thinkingFoldMap.value[index];
 };
 
 </script>
