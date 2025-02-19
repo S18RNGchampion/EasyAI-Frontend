@@ -21,7 +21,7 @@
 
           <!-- 用户消息 -->
           <div v-if="message.role === 'User'" :class="['user-message-bubble', { 'error-bubble': message.isError }]">
-            <MdPreview :modelValue="message.content" previewTheme="github" :codeFoldable="false" :noImgZoomIn="true" />
+            <div class="message-text">{{ message.content }}</div>
           </div>
 
           <!-- AI消息 -->
